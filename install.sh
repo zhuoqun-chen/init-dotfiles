@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# inputs:
+# - GITHUB_TOKEN (clone repo)
+# - AGE_PASSPHRASE (decrypt)
+
+function binary-found() {
+	command -v "$1" >/dev/null 2>&1
+}
+
+function install-bins() {
+    sudo apt update
+    for bin in "$@"; do
+        if ! binary-found "$bin"; then
+            sudo apt install -y "$bin"
+        fi
+    done
+}
+
+install-bins wget curl expect git gh
+if ! binary-found "chezmoi"; then
+    sudo sh -c "$(wget -qO- get.chezmoi.io)" -- -b /usr/local/bin
+fi
+
+echo "$GITHUB_TOKEN" | gh auth login -p ssh --hostname github.com --with-token
+
+dotroot="${HOME}"/.local/share/chezmoi
+gh repo clone zhuoqun-chen/dotfiles "$dotroot"
+mkdir -p "${HOME}"/.config/chezmoi
+
+# this step requires `AGE_PASSPHRASE` to be set
+expect "${dotroot}"/pvc_home/decrypt-key.exp
+sleep 1
+chezmoi init --source="${dotroot}" --apply
+echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
+
+if [[ $# -eq 0 ]]; then
+    exec "/bin/zsh"
+else
+    exec "$@"
+fi
