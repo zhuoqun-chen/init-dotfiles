@@ -4,9 +4,6 @@
 # - GITHUB_TOKEN (clone repo)
 # - AGE_PASSPHRASE (decrypt)
 
-GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
-dotroot="${HOME}"/.local/share/chezmoi
-
 function binary-found() {
 	command -v "$1" >/dev/null 2>&1
 }
@@ -20,6 +17,10 @@ function install-bins() {
 }
 
 function main() {
+
+    # Error: dotroot environment variable is not set if they're outside of main
+    GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
+    dotroot="${HOME}"/.local/share/chezmoi
 
     local target_shell
     if binary-found "/bin/zsh"; then
