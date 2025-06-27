@@ -21,6 +21,12 @@ function main() {
     # export dotroot to be seen by expect script
     export GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
     export dotroot=${dotroot:="${HOME}/.local/share/chezmoi"}
+
+    # if dotroot starts with "~" (passed from outside), expand it for the expect script
+    # shellcheck disable=SC2088
+    if [[ "$dotroot" == "~/"* ]]; then
+        dotroot="${HOME}/${dotroot:2}"
+    fi
     echo "selected dotroot: $dotroot"
 
     local target_shell
