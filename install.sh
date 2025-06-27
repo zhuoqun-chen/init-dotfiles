@@ -69,6 +69,8 @@ function main() {
     chezmoi init --source="${dotroot}" --apply
     echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
 
+    command -v nvim >/dev/null && nvim --headless +Lazy! sync +qa
+
     if [[ $# -eq 0 ]]; then
         echo "no args provided, executing target shell: $target_shell"
         exec "$target_shell"
