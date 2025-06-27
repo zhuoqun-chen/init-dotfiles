@@ -19,7 +19,7 @@ function install-bins() {
 
 install-bins wget curl expect git gh
 if ! binary-found "chezmoi"; then
-    sudo sh -c "$(wget -qO- get.chezmoi.io)" -- -b /usr/local/bin
+    sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
 fi
 
 echo "$GITHUB_TOKEN" | gh auth login -p ssh --hostname github.com --with-token
