@@ -20,7 +20,8 @@ function main() {
 
     # export dotroot to be seen by expect script
     export GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
-    export dotroot="${HOME}"/.local/share/chezmoi
+    export dotroot=${dotroot:="${HOME}/.local/share/chezmoi"}
+    echo "selected dotroot: $dotroot"
 
     local target_shell
     if binary-found "/bin/zsh"; then
