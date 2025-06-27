@@ -46,7 +46,7 @@ function main() {
     fi
 
     sudo apt update
-    install-bins curl expect git
+    install-bins curl expect git age
     if ! binary-found "chezmoi"; then
         sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
     fi
