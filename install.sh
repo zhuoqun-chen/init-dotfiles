@@ -34,15 +34,17 @@ function main() {
         return 1
     fi
 
+    local noargs_msg="\nno args provided, executing target shell: $target_shell"
+    local args_msg="\nargs provided, executing: $*"
+
     # if two inputs are not set, directly exec "/bin/zsh" or exec "$@"
     if [[ -z "$GITHUB_TOKEN" || -z "$AGE_PASSPHRASE" ]]; then
         echo "GITHUB_TOKEN and AGE_PASSPHRASE not set, skipping dotfiles init."
         if [[ $# -eq 0 ]]; then
-            echo "no args provided, executing target shell: $target_shell"
+            echo -e "$noargs_msg"
             exec "$target_shell"
         else
-            echo "args provided, executing:"
-            echo "$@"
+            echo -e "$args_msg"
             exec "$@"
         fi
         return 0
@@ -72,11 +74,10 @@ function main() {
     command -v nvim >/dev/null && nvim --headless +Lazy! sync +qa
 
     if [[ $# -eq 0 ]]; then
-        echo "no args provided, executing target shell: $target_shell"
+        echo -e "$noargs_msg"
         exec "$target_shell"
     else
-        echo "args provided, executing:"
-        echo "$@"
+        echo -e "$args_msg"
         exec "$@"
     fi
 }
