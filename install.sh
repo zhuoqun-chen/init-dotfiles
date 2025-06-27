@@ -38,8 +38,11 @@ function main() {
     if [[ -z "$GITHUB_TOKEN" || -z "$AGE_PASSPHRASE" ]]; then
         echo "GITHUB_TOKEN and AGE_PASSPHRASE not set, skipping dotfiles init."
         if [[ $# -eq 0 ]]; then
+            echo "no args provided, executing target shell: $target_shell"
             exec "$target_shell"
         else
+            echo "args provided, executing:"
+            echo "$@"
             exec "$@"
         fi
         return 0
@@ -67,8 +70,11 @@ function main() {
     echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
 
     if [[ $# -eq 0 ]]; then
+        echo "no args provided, executing target shell: $target_shell"
         exec "$target_shell"
     else
+        echo "args provided, executing:"
+        echo "$@"
         exec "$@"
     fi
 }
