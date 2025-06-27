@@ -18,9 +18,9 @@ function install-bins() {
 
 function main() {
 
-    # Error: dotroot environment variable is not set if they're outside of main
-    GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
-    dotroot="${HOME}"/.local/share/chezmoi
+    # export dotroot to be seen by expect script
+    export GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
+    export dotroot="${HOME}"/.local/share/chezmoi
 
     local target_shell
     if binary-found "/bin/zsh"; then
@@ -60,7 +60,7 @@ function main() {
 
     mkdir -p "${HOME}"/.config/chezmoi
 
-    # this step requires `AGE_PASSPHRASE` to be set
+    # this step requires `AGE_PASSPHRASE` + `dotroot` to be set
     expect "${dotroot}"/pvc_home/decrypt-key.exp
     sleep 1
     chezmoi init --source="${dotroot}" --apply
