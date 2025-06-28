@@ -21,6 +21,7 @@ function main() {
     # export dotroot to be seen by expect script
     export GITHUB_USERNAME=${GITHUB_USERNAME:="zhuoqun-chen"}
     export dotroot=${dotroot:="${HOME}/.local/share/chezmoi"}
+    local ssh_auth_key_fn="id_rsa_mbp14"
 
     # if dotroot starts with "~" (passed from outside), expand it for the expect script
     # shellcheck disable=SC2088
@@ -77,6 +78,13 @@ function main() {
     sleep 1
     chezmoi init --source="${dotroot}" --apply
     echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
+
+    # setup ssh-server so that if it's installed and running and configured to only allow key-based auth login of non-root user
+    if [[ -f ~/.ssh/"${ssh_auth_key_fn}".pub ]]; then
+        [[ -f ~/.ssh/authorized_keys ]] || touch ~/.ssh/authorized_keys
+        chmod 600 ~/.ssh/authorized_keys
+        cat ~/.ssh/"${ssh_auth_key_fn}".pub >> ~/.ssh/authorized_keys
+    fi
 
     command -v nvim >/dev/null && nvim --headless +Lazy! sync +qa
 
