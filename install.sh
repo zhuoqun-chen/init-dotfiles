@@ -65,7 +65,8 @@ function main() {
         return 0
     fi
 
-    sudo apt update
+    echo "apt updating..."
+    sudo apt update >/dev/null
     install-bins curl expect git age openssh-server
     if ! binary-found "chezmoi"; then
         sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
@@ -86,7 +87,7 @@ function main() {
     chezmoi init --source="${dotroot}" --apply
     echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
 
-    command -v nvim >/dev/null && nvim --headless +Lazy! sync +qa
+    command -v nvim >/dev/null && (echo "setting up nvim plugins..." && nvim --headless +Lazy! sync +qa >/dev/null)
     echo -e "\n"
 
     # setup ssh-server so that if it's installed and running and configured to only allow key-based auth login of non-root user
