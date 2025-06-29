@@ -106,8 +106,8 @@ function main() {
         echo "SSH server is already running."
     else
         echo "SSH server is not running, starting it now..."
-        # dump log to make `navi` work (the output is always seen by `navi`, idk why)
-        sudo service ssh start > /dev/null 2>&1
+        # note: remember to use `[cmd] >/dev/null 2>&1` when adding to `/etc/<rc|env>` bash/zsh files to avoid `navi` not working
+        sudo service ssh start
     fi
 
     # shellcheck disable=SC1091
