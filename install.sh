@@ -80,18 +80,19 @@ function main() {
     chezmoi init --source="${dotroot}" --apply
     echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
 
-    # setup ssh-server so that if it's installed and running and configured to only allow key-based auth login of non-root user
-    if ! [[ -d ~/.ssh ]]; then
-        mkdir -p ~/.ssh && chmod 700 ~/.ssh
-        if [[ -f ~/.ssh/"${ssh_auth_key_fn}".pub ]]; then
-            [[ -f ~/.ssh/authorized_keys ]] || touch ~/.ssh/authorized_keys
-            chmod 600 ~/.ssh/authorized_keys
-            echo "" >> ~/.ssh/authorized_keys
-            cat ~/.ssh/"${ssh_auth_key_fn}".pub >> ~/.ssh/authorized_keys
-        fi
-    fi
-
     command -v nvim >/dev/null && nvim --headless +Lazy! sync +qa
+    echo -e "\n"
+
+    # setup ssh-server so that if it's installed and running and configured to only allow key-based auth login of non-root user
+    [[ -d ~/.ssh ]] || mkdir -p ~/.ssh
+    chmod 700 ~/.ssh
+    if [[ -f ~/.ssh/"${ssh_auth_key_fn}".pub ]]; then
+        [[ -f ~/.ssh/authorized_keys ]] || touch ~/.ssh/authorized_keys
+        chmod 600 ~/.ssh/authorized_keys
+        echo -e "\n" >> ~/.ssh/authorized_keys
+        cat ~/.ssh/"${ssh_auth_key_fn}".pub >> ~/.ssh/authorized_keys
+        echo "SSH public key ${ssh_auth_key_fn} added to ~/.ssh/authorized_keys"
+    fi
 
     # When this script serves as entrypoint for a container (or cmd of entrypoint `/bin/bash -c`)
     # seems `sudo service ssh start` line in `/etc/zshenv` (if there is such file and such line) won't be executed (let's assume $target_shell is zsh)
