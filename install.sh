@@ -4,6 +4,12 @@
 # - GITHUB_TOKEN (clone repo)
 # - AGE_PASSPHRASE (decrypt)
 
+# - (optional) dotroot (default: ~/.local/share/chezmoi, suggested option is ~/dotfiles)
+
+# - (optional) pvcroot
+# - (optional) VSCODE_VERSION
+# - (optional) VSCODE_COMMIT_ID
+
 function binary-found() {
 	command -v "$1" >/dev/null 2>&1
 }
@@ -102,6 +108,9 @@ function main() {
         echo "SSH server is not running, starting it now..."
         sudo service ssh start
     fi
+
+    # shellcheck disable=SC1091
+    source "${dotroot}/pvc_home/init_vscode.sh"
 
     if [[ $# -eq 0 ]]; then
         echo -e "$noargs_msg"
