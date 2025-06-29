@@ -6,9 +6,9 @@
 
 # - (optional) dotroot (default: ~/.local/share/chezmoi, suggested option is ~/dotfiles)
 
-# - (optional) pvcroot
-# - (optional) VSCODE_VERSION
-# - (optional) VSCODE_COMMIT_ID
+# - (optional) pvcroot          (for `init_vscode.sh`, empty or not set will use dotroot, not doing ext cache)
+# - (optional) VSCODE_VERSION   (for `init_vscode.sh`, empty or not set will skip installing vscode-server)
+# - (optional) VSCODE_COMMIT_ID (for `init_vscode.sh`, empty or not set will skip installing vscode-server)
 
 function binary-found() {
 	command -v "$1" >/dev/null 2>&1
