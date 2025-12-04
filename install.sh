@@ -9,6 +9,8 @@
 # - (optional) pvcroot          (for `init_vscode.sh`, empty or not set will use dotroot, not doing ext cache)
 # - (optional) VSCODE_VERSION   (for `init_vscode.sh`, empty or not set will skip installing vscode-server)
 # - (optional) VSCODE_COMMIT_ID (for `init_vscode.sh`, empty or not set will skip installing vscode-server)
+# - (optional) CURSOR_VERSION   (for `init_cursor.sh`, empty or not set will skip installing cursor)
+# - (optional) CURSOR_COMMIT_ID (for `init_cursor.sh`, empty or not set will skip installing cursor)
 
 function binary-found() {
 	command -v "$1" >/dev/null 2>&1
@@ -113,6 +115,8 @@ function main() {
 
     # shellcheck disable=SC1091
     source "${dotroot}/pvc_home/init_vscode.sh"
+    # shellcheck disable=SC1091
+    source "${dotroot}/pvc_home/init_cursor.sh"
 
     if [[ $# -eq 0 ]]; then
         echo -e "$noargs_msg"
