@@ -49,6 +49,7 @@ function install-bins() {
     done
     [[ ${#missing_bins[@]} -eq 0 ]] && return 0
 
+    echo "Installing missing binaries: ${missing_bins[*]}"
     if has-sudo-privileges; then
         sudo apt install -y "${missing_bins[@]}"
     elif binary-found "brew"; then
@@ -61,7 +62,11 @@ function install-bins() {
 }
 
 function install-chezmoi() {
-    if binary-found "chezmoi"; then return 0; fi
+    if binary-found "chezmoi"; then
+        echo "chezmoi already installed"
+        return 0
+    fi
+    echo "Installing chezmoi..."
     if has-sudo-privileges; then
         sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
     else
@@ -70,7 +75,11 @@ function install-chezmoi() {
 }
 
 function install-uv() {
-    if binary-found "uv"; then return 0; fi
+    if binary-found "uv"; then
+        echo "uv already installed"
+        return 0
+    fi
+    echo "Installing uv..."
     # uv installer defaults to ~/.local/bin
     curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --no-modify-path
 }
@@ -138,11 +147,27 @@ function main() {
         return 0
     fi
 
+    # Track warnings to print at the end
+    local warnings=()
+
     if has-sudo-privileges; then
+        echo "sudo access: yes"
         echo "apt updating..."
         sudo apt update >/dev/null
+    else
+        echo "sudo access: no (will use brew or ~/.local/bin)"
     fi
-    install-bins curl git age openssh-server
+
+    install-bins curl git age
+    # openssh-server can only be installed via apt
+    if ! binary-found "sshd"; then
+        if has-sudo-privileges; then
+            echo "Installing openssh-server..."
+            sudo apt install -y openssh-server
+        else
+            warnings+=("openssh-server not installed (requires sudo/apt)")
+        fi
+    fi
     install-uv
     install-chezmoi
 
@@ -151,11 +176,14 @@ function main() {
     # echo "$GITHUB_TOKEN" | gh auth login -p ssh --hostname github.com --with-token
     # gh repo clone "$GITHUB_USERNAME"/dotfiles "$dotroot"
 
+    echo "Cloning dotfiles repo..."
     git clone https://"${GITHUB_TOKEN}"@github.com/"${GITHUB_USERNAME}"/dotfiles.git "$dotroot"
 
     # this step requires `AGE_PASSPHRASE` + `dotroot` to be set
+    echo "Decrypting age key..."
     ensure-executable "${dotroot}/pvc_home/decrypt-key.py"
     sleep 1
+    echo "Applying chezmoi..."
     chezmoi init --source="${dotroot}" --apply
     echo ".config/git/config" >> "${dotroot}"/home/.chezmoiignore.tmpl
 
@@ -176,19 +204,27 @@ function main() {
     # When this script serves as entrypoint for a container (or cmd of entrypoint `/bin/bash -c`)
     # seems `sudo service ssh start` line in `/etc/zshenv` (if there is such file and such line) won't be executed (let's assume $target_shell is zsh)
     if pgrep -x "sshd" >/dev/null; then
-        echo "SSH server is already running."
-    elif has-sudo-privileges; then
-        echo "SSH server is not running, starting it now..."
+        echo "SSH server: already running"
+    elif has-sudo-privileges && binary-found "sshd"; then
+        echo "SSH server: starting..."
         # note: remember to use `[cmd] >/dev/null 2>&1` when adding to `/etc/<rc|env>` bash/zsh files to avoid `navi` not working
         sudo service ssh start
     else
-        echo "SSH server is not running, but no sudo privileges to start it."
+        warnings+=("SSH server not started (requires sudo & sshd installed)")
     fi
 
     # shellcheck disable=SC1091
     source "${dotroot}/pvc_home/init_vscode.sh"
     # shellcheck disable=SC1091
     source "${dotroot}/pvc_home/init_cursor.sh"
+
+    # Print warnings if any
+    if [[ ${#warnings[@]} -gt 0 ]]; then
+        echo -e "\n[Warnings]"
+        for w in "${warnings[@]}"; do
+            echo "  - $w"
+        done
+    fi
 
     if [[ $# -eq 0 ]]; then
         echo -e "$noargs_msg"
