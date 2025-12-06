@@ -20,8 +20,41 @@ function binary-found() {
 	command -v "$1" >/dev/null 2>&1
 }
 
+function is-in-container() {
+    # Detection order based on starship (ref: starship/src/modules/container.rs)
+    # 1. OpenVZ
+    [[ -d /proc/vz && ! -d /proc/bc ]] && return 0
+    # 2. OCI
+    [[ -f /run/host/container-manager ]] && return 0
+    # 3. Podman and others
+    [[ -f /run/.containerenv ]] && return 0
+    # 4. Systemd (skip WSL)
+    if [[ -f /run/systemd/container ]]; then
+        local content
+        content=$(cat /run/systemd/container 2>/dev/null)
+        [[ "$content" != "wsl" ]] && return 0
+    fi
+    # 5. Docker
+    [[ -f /.dockerenv ]] && return 0
+    return 1
+}
+
 function has-sudo-privileges() {
-    groups "$(id -un)" | grep -q '\<sudo\>'
+    # Check group membership based on OS (fast)
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        # macOS: admin group grants sudo
+        groups "$(id -un)" | grep -qE '\<admin\>' && return 0
+    else
+        # Linux: sudo or wheel group
+        groups "$(id -un)" | grep -qE '\<(sudo|wheel)\>' && return 0
+    fi
+    # In container: try passwordless sudo (NOPASSWD via sudoers)
+    if is-in-container; then
+        sudo -n true 2>/dev/null
+        return $?
+    fi
+    # Not in container & not in sudo group: assume no sudo
+    return 1
 }
 
 function ensure-common-paths() {
