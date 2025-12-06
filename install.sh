@@ -210,7 +210,11 @@ function main() {
     # gh repo clone "$GITHUB_USERNAME"/dotfiles "$dotroot"
 
     echo "Cloning dotfiles repo..."
-    git clone https://"${GITHUB_TOKEN}"@github.com/"${GITHUB_USERNAME}"/dotfiles.git "$dotroot"
+    if is-in-container; then
+        git clone --depth 1 https://"${GITHUB_TOKEN}"@github.com/"${GITHUB_USERNAME}"/dotfiles.git "$dotroot"
+    else
+        git clone https://"${GITHUB_TOKEN}"@github.com/"${GITHUB_USERNAME}"/dotfiles.git "$dotroot"
+    fi
 
     # this step requires `AGE_PASSPHRASE` + `dotroot` to be set
     echo "Decrypting age key..."
